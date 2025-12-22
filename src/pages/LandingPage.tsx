@@ -1,27 +1,53 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { csTemplate, automationTemplate, blankTemplate } from '../templates';
+import { TreeData } from '../types';
+
+interface RecentTree {
+  id: string;
+  title: string;
+  timestamp: number;
+}
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const [recentTrees, setRecentTrees] = useState<RecentTree[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('recent_trees');
+      const list: RecentTree[] = stored ? JSON.parse(stored) : [];
+      setRecentTrees(list.slice(0, 5));
+    } catch (err) {
+      console.error('Failed to load recent trees:', err);
+    }
+  }, []);
 
   const createTree = async (template: 'blank' | 'cs' | 'automation') => {
     try {
-      let content;
+      let courses;
       switch (template) {
         case 'cs':
-          content = csTemplate;
+          courses = csTemplate;
           break;
         case 'automation':
-          content = automationTemplate;
+          courses = automationTemplate;
           break;
         default:
-          content = blankTemplate;
+          courses = blankTemplate;
       }
+
+      const treeData: TreeData = {
+        courses,
+        title: 'My Course Tree',
+        likes: 0,
+        contact_info: null,
+      };
 
       const { data, error } = await supabase
         .from('trees')
-        .insert({ content })
+        .insert({ content: treeData })
         .select('id')
         .single();
 
@@ -31,6 +57,13 @@ export function LandingPage() {
       }
 
       if (data && data.id) {
+        // Store tree ID in localStorage to identify owner
+        localStorage.setItem(`tree_owner_${data.id}`, 'true');
+        localStorage.setItem(`tree_just_created_${data.id}`, 'true');
+        const recentEntry: RecentTree = { id: data.id, title: treeData.title, timestamp: Date.now() };
+        const updatedRecent = [recentEntry, ...recentTrees.filter(item => item.id !== data.id)].slice(0, 5);
+        localStorage.setItem('recent_trees', JSON.stringify(updatedRecent));
+        setRecentTrees(updatedRecent);
         navigate(`/?id=${data.id}`);
       }
     } catch (err) {
@@ -62,6 +95,24 @@ export function LandingPage() {
             Load Automation Template
           </button>
         </div>
+
+        {recentTrees.length > 0 && (
+          <div className="mt-10 max-w-md mx-auto bg-white/70 border-2 border-[#F9E4B7] rounded-2xl shadow-sm p-4 text-left">
+            <h2 className="text-lg font-bold text-[#4A3B2A] mb-3">Resume Recent Trees</h2>
+            <div className="flex flex-col gap-2">
+              {recentTrees.map(tree => (
+                <button
+                  key={tree.id}
+                  onClick={() => navigate(`/?id=${tree.id}`)}
+                  className="w-full text-left px-4 py-3 rounded-xl bg-white hover:bg-[#F9E4B7]/40 transition-colors text-[#4A3B2A] border border-[#F9E4B7]"
+                >
+                  <div className="font-semibold">{tree.title || 'My Course Tree'}</div>
+                  <div className="text-xs text-[#4A3B2A]/70 mt-1 break-all">ID: {tree.id}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

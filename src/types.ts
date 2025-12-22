@@ -1,3 +1,10 @@
+export interface Resource {
+  id: string;
+  url: string;
+  title: string;
+  type: 'video' | 'article' | 'other';
+}
+
 export interface Course {
   id: string;
   name: string;
@@ -5,5 +12,13 @@ export interface Course {
   status: 'locked' | 'completed' | 'reviewed';
   rating: number | null;
   review: string | null;
-  url: string | null;
+  resources: Resource[];
+  prof_review: string | null;
+}
+
+export interface TreeData {
+  courses: Course[];
+  title: string;
+  likes: number;
+  contact_info: string | null;
 }

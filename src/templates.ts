@@ -8,7 +8,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs102',
@@ -17,7 +18,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs103',
@@ -26,7 +28,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs104',
@@ -35,7 +38,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs105',
@@ -44,7 +48,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs106',
@@ -53,7 +58,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs107',
@@ -62,7 +68,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs108',
@@ -71,7 +78,8 @@ export const csTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs109',
@@ -80,7 +88,8 @@ export const csTemplate: Course[] = [
     status: 'locked',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'cs110',
@@ -89,7 +98,8 @@ export const csTemplate: Course[] = [
     status: 'locked',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
 ];
 
@@ -101,7 +111,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto102',
@@ -110,7 +121,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto103',
@@ -119,7 +131,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto104',
@@ -128,7 +141,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto105',
@@ -137,7 +151,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto106',
@@ -146,7 +161,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto107',
@@ -155,7 +171,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto108',
@@ -164,7 +181,8 @@ export const automationTemplate: Course[] = [
     status: 'completed',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto109',
@@ -173,7 +191,8 @@ export const automationTemplate: Course[] = [
     status: 'locked',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
   {
     id: 'auto110',
@@ -182,7 +201,8 @@ export const automationTemplate: Course[] = [
     status: 'locked',
     rating: null,
     review: null,
-    url: null,
+    resources: [],
+    prof_review: null,
   },
 ];
 

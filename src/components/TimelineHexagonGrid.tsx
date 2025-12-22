@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Course } from '../types';
+import { Course, Resource } from '../types';
 import { CourseModal } from './CourseModal';
 import { Plus } from 'lucide-react';
 
@@ -13,6 +13,7 @@ interface HexagonProps {
 interface TimelineHexagonGridProps {
   courses: Course[];
   onCoursesChange: (courses: Course[]) => void;
+  onCoursesChangeImmediate?: (courses: Course[]) => void;
 }
 
 function Hexagon({ course, onClick }: HexagonProps) {
@@ -67,9 +68,10 @@ function Hexagon({ course, onClick }: HexagonProps) {
   );
 }
 
-export function TimelineHexagonGrid({ courses, onCoursesChange }: TimelineHexagonGridProps) {
+export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeImmediate }: TimelineHexagonGridProps) {
   const [localCourses, setLocalCourses] = useState<Course[]>(courses);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedIsNew, setSelectedIsNew] = useState(false);
 
   // 当外部 courses 变化时，同步本地状态
   useEffect(() => {
@@ -85,55 +87,84 @@ export function TimelineHexagonGrid({ courses, onCoursesChange }: TimelineHexago
     name: string,
     rating: number,
     review: string,
-    url: string | null
+    resources: Resource[],
+    profReview: string | null
   ) => {
-    const updatedCourses = localCourses.map(course =>
-      course.id === courseId
-        ? {
-            ...course,
-            name,
-            status: 'reviewed' as const,
-            rating: rating || null,
-            review: review || null,
-            url: url || null,
-          }
-        : course
-    );
-    setLocalCourses(updatedCourses);
-    setSelectedCourse(null);
-    onCoursesChange(updatedCourses);
+    if (selectedIsNew) {
+      // 新建课程：生成新的 UUID 并添加到数组
+      const newCourse: Course = {
+        id: `course-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name,
+        year: selectedCourse!.year,
+        status: 'reviewed' as const,
+        rating: rating || null,
+        review: review || null,
+        resources: resources || [],
+        prof_review: profReview || null,
+      };
+      const updatedCourses = [...localCourses, newCourse];
+      setLocalCourses(updatedCourses);
+      setSelectedCourse(null);
+      setSelectedIsNew(false);
+      onCoursesChange(updatedCourses);
+    } else {
+      // 更新现有课程
+      const updatedCourses = localCourses.map(course =>
+        course.id === courseId
+          ? {
+              ...course,
+              name,
+              status: 'reviewed' as const,
+              rating: rating || null,
+              review: review || null,
+              resources: resources || [],
+              prof_review: profReview || null,
+            }
+          : course
+      );
+      setLocalCourses(updatedCourses);
+      setSelectedCourse(null);
+      setSelectedIsNew(false);
+      onCoursesChange(updatedCourses);
+    }
   };
 
   const handleDeleteCourse = (courseId: string) => {
     const updatedCourses = localCourses.filter(c => c.id !== courseId);
     setLocalCourses(updatedCourses);
     setSelectedCourse(null);
+    setSelectedIsNew(false);
     onCoursesChange(updatedCourses);
+    if (onCoursesChangeImmediate) {
+      onCoursesChangeImmediate(updatedCourses);
+    }
   };
 
   const handleAddCourse = (year: number) => {
-    const newCourse: Course = {
-      id: `course-${Date.now()}`,
+    // 创建临时课程对象（不添加到状态中）
+    const tempCourse: Course = {
+      id: `temp-course-${Date.now()}`,
       name: 'New Course',
       year: year as 1 | 2 | 3 | 4,
       status: 'completed',
       rating: null,
       review: null,
-      url: null,
+      resources: [],
+      prof_review: null,
     };
-    const updatedCourses = [...localCourses, newCourse];
-    setLocalCourses(updatedCourses);
-    setSelectedCourse(newCourse);
-    onCoursesChange(updatedCourses);
+    // 只打开 Modal，不添加到 courses 数组
+    setSelectedCourse(tempCourse);
+    setSelectedIsNew(true);
+  };
+
+  const handleCancelCourse = () => {
+    // 如果是新建模式，直接关闭 Modal，不添加任何内容
+    setSelectedCourse(null);
+    setSelectedIsNew(false);
   };
 
   return (
     <div className="w-full">
-      <div className="mb-8">
-        <h1 className="text-5xl font-bold text-[#4A3B2A] mb-3" style={{ fontFamily: "'Nunito', sans-serif" }}>CourseTree</h1>
-        <p className="text-[#4A3B2A]/80 text-lg">Your Learning Journey</p>
-      </div>
-
       <div className="bg-white rounded-3xl shadow-xl p-4 sm:p-8">
         <div className="overflow-x-auto pb-4">
           <div className="min-w-max">
@@ -174,7 +205,10 @@ export function TimelineHexagonGrid({ courses, onCoursesChange }: TimelineHexago
                         <Hexagon
                           key={course.id}
                           course={course}
-                          onClick={() => setSelectedCourse(course)}
+                          onClick={() => {
+                            setSelectedCourse(course);
+                            setSelectedIsNew(false);
+                          }}
                         />
                       ))}
                     </div>
@@ -215,7 +249,10 @@ export function TimelineHexagonGrid({ courses, onCoursesChange }: TimelineHexago
                         <Hexagon
                           key={course.id}
                           course={course}
-                          onClick={() => setSelectedCourse(course)}
+                          onClick={() => {
+                            setSelectedCourse(course);
+                            setSelectedIsNew(false);
+                          }}
                         />
                       ))}
                     </div>
@@ -268,9 +305,10 @@ export function TimelineHexagonGrid({ courses, onCoursesChange }: TimelineHexago
       {selectedCourse && (
         <CourseModal
           course={selectedCourse}
-          onClose={() => setSelectedCourse(null)}
+          onClose={handleCancelCourse}
           onSave={handleSaveCourse}
           onDelete={handleDeleteCourse}
+          isNew={selectedIsNew}
         />
       )}
     </div>

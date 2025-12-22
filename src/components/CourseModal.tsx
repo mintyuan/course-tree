@@ -1,5 +1,5 @@
-import { Course } from '../types';
-import { X, Trash2 } from 'lucide-react';
+import { Course, Resource } from '../types';
+import { X, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 interface CourseModalProps {
@@ -10,20 +10,45 @@ interface CourseModalProps {
     name: string,
     rating: number,
     review: string,
-    url: string | null
+    resources: Resource[],
+    profReview: string | null
   ) => void;
   onDelete: (courseId: string) => void;
+  isNew?: boolean;
 }
 
-export function CourseModal({ course, onClose, onSave, onDelete }: CourseModalProps) {
+export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }: CourseModalProps) {
   const [name, setName] = useState(course.name);
   const [rating, setRating] = useState(course.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [url, setUrl] = useState(course.url || '');
+  const [resources, setResources] = useState<Resource[]>(course.resources || []);
   const [oneLiner, setOneLiner] = useState(course.review || '');
+  const [profReview, setProfReview] = useState(course.prof_review || '');
+  
+  // 添加资源的输入状态
+  const [newResourceUrl, setNewResourceUrl] = useState('');
+  const [newResourceTitle, setNewResourceTitle] = useState('');
 
   const handleSave = () => {
-    onSave(course.id, name, rating, oneLiner, url.trim() || null);
+    onSave(course.id, name, rating, oneLiner, resources, profReview.trim() || null);
+  };
+
+  const handleAddResource = () => {
+    if (newResourceUrl.trim()) {
+      const newResource: Resource = {
+        id: `resource-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        url: newResourceUrl.trim(),
+        title: newResourceTitle.trim() || new URL(newResourceUrl).hostname.replace('www.', ''),
+        type: 'other',
+      };
+      setResources([...resources, newResource]);
+      setNewResourceUrl('');
+      setNewResourceTitle('');
+    }
+  };
+
+  const handleRemoveResource = (resourceId: string) => {
+    setResources(resources.filter(r => r.id !== resourceId));
   };
 
   const handleDelete = () => {
@@ -107,30 +132,88 @@ export function CourseModal({ course, onClose, onSave, onDelete }: CourseModalPr
             )}
           </div>
 
+          {/* Professor Review */}
           <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
             <h3 className="text-lg sm:text-xl font-bold text-[#4A3B2A] mb-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
-              Resource URL
+              Comments on the Prof...
             </h3>
-            <p className="text-sm text-[#4A3B2A]/80 mb-4">
-              Add a helpful resource link (YouTube, article, etc.)
-            </p>
-            <input
-              type="url"
-              value={url}
-              onChange={e => setUrl(e.target.value)}
-              placeholder="https://youtube.com/watch?v=..."
-              className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-full focus:outline-none focus:border-[#FFD700] transition-colors bg-white text-[#4A3B2A]"
+            <p className="text-sm text-[#4A3B2A]/80 mb-3">(Optional)</p>
+            <textarea
+              value={profReview}
+              onChange={e => setProfReview(e.target.value)}
+              placeholder="Share your thoughts about the professor..."
+              className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-2xl focus:outline-none focus:border-[#FFD700] transition-colors resize-none bg-white text-[#4A3B2A]"
+              rows={3}
             />
-            {url && (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-block text-[#4A3B2A] hover:text-[#FFD700] hover:underline text-sm font-medium"
-              >
-                打开链接 →
-              </a>
+          </div>
+
+          {/* Resources Section */}
+          <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
+            <h3 className="text-lg sm:text-xl font-bold text-[#4A3B2A] mb-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
+              Resources
+            </h3>
+            
+            {/* Resource List */}
+            {resources.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {resources.map(resource => (
+                  <div
+                    key={resource.id}
+                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#F9E4B7] group hover:border-[#FFD700] transition-colors"
+                  >
+                    <LinkIcon size={18} className="text-[#4A3B2A] flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#4A3B2A] truncate">{resource.title}</p>
+                      <p className="text-xs text-[#4A3B2A]/60 truncate">{resource.url}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-[#F9E4B7] hover:bg-[#FFD700] rounded-full text-xs font-medium text-[#4A3B2A] transition-colors"
+                      >
+                        Open
+                      </a>
+                      <button
+                        onClick={() => handleRemoveResource(resource.id)}
+                        className="p-1.5 hover:bg-red-100 rounded-full transition-colors text-red-600 opacity-0 group-hover:opacity-100"
+                        title="Remove"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
+
+            {/* Add Resource Input */}
+            <div className="space-y-2">
+              <input
+                type="url"
+                value={newResourceUrl}
+                onChange={e => setNewResourceUrl(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleAddResource()}
+                placeholder="https://youtube.com/watch?v=..."
+                className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-full focus:outline-none focus:border-[#FFD700] transition-colors bg-white text-[#4A3B2A]"
+              />
+              <input
+                type="text"
+                value={newResourceTitle}
+                onChange={e => setNewResourceTitle(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleAddResource()}
+                placeholder="Title/Note (e.g., Bilibili Playlist)"
+                className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-full focus:outline-none focus:border-[#FFD700] transition-colors bg-white text-[#4A3B2A]"
+              />
+              <button
+                onClick={handleAddResource}
+                className="w-full px-4 py-2 bg-[#F9E4B7] hover:bg-[#FFD700] rounded-full text-[#4A3B2A] font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Plus size={16} />
+                Add
+              </button>
+            </div>
           </div>
 
           <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
