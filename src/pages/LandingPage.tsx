@@ -14,6 +14,7 @@ interface RecentTree {
 export function LandingPage() {
   const navigate = useNavigate();
   const [recentTrees, setRecentTrees] = useState<RecentTree[]>([]);
+  const [showRecent, setShowRecent] = useState(false);
 
   useEffect(() => {
     try {
@@ -106,20 +107,34 @@ export function LandingPage() {
           </button>
         </div>
 
+        {/* Resume Recent Trees - Collapsible Dropdown */}
         {recentTrees.length > 0 && (
-          <div className="mt-10 max-w-md mx-auto bg-white/70 border-2 border-[#F9E4B7] rounded-2xl shadow-sm p-4 text-left relative z-10">
-            <h2 className="text-lg font-bold text-[#4A3B2A] mb-3">Resume Recent Trees</h2>
-            <div className="flex flex-col gap-2">
-              {recentTrees.map(tree => (
-                <button
-                  key={tree.id}
-                  onClick={() => navigate(`/?id=${tree.id}`)}
-                  className="w-full text-left px-4 py-3 rounded-xl bg-white hover:bg-[#F9E4B7]/40 transition-colors text-[#4A3B2A] border border-[#F9E4B7]"
-                >
-                  <div className="font-semibold">{tree.title || 'My Course Tree'}</div>
-                  <div className="text-xs text-[#4A3B2A]/70 mt-1 break-all">ID: {tree.id}</div>
-                </button>
-              ))}
+          <div className="mt-10 max-w-md mx-auto relative z-10">
+            {/* Trigger Button */}
+            <button
+              onClick={() => setShowRecent(!showRecent)}
+              className="px-6 py-3 bg-white rounded-full border-2 border-[#8B7355] text-[#8B7355] font-semibold text-base transition-all duration-300 hover:shadow-[0_0_15px_rgba(139,115,85,0.4)] hover:scale-105 w-full"
+            >
+              📂 Resume Recent Trees ({recentTrees.length})
+            </button>
+
+            {/* Collapsible List */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                showRecent ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
+              }`}
+            >
+              <div className="flex flex-col gap-3">
+                {recentTrees.map(tree => (
+                  <button
+                    key={tree.id}
+                    onClick={() => navigate(`/?id=${tree.id}`)}
+                    className="w-full text-left px-5 py-4 rounded-2xl bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg text-[#4A3B2A] border border-[#F9E4B7]/50 hover:border-[#FFD700]"
+                  >
+                    <div className="font-bold text-lg">{tree.title || 'My Course Tree'}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
