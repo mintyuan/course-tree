@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { csTemplate, automationTemplate, blankTemplate } from '../templates';
 import { TreeData } from '../types';
+import { ParticleBackground } from '../components/ParticleBackground';
 
 interface RecentTree {
   id: string;
@@ -72,32 +73,41 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFCF0] flex items-center justify-center px-4">
-      <div className="text-center">
+    <div className="min-h-screen bg-[#FFFCF0] flex items-center justify-center px-4 relative">
+      {/* Particle Background */}
+      <ParticleBackground />
+
+      {/* Content with z-10 to appear above particles */}
+      <div className="text-center relative z-10">
         <h1 className="text-6xl font-bold text-[#4A3B2A] mb-12" style={{ fontFamily: "'Nunito', sans-serif" }}>CourseTree</h1>
         <div className="flex flex-col gap-4 max-w-md mx-auto">
+          {/* Start Blank - Warm Orange Theme */}
           <button
             onClick={() => createTree('blank')}
-            className="px-8 py-4 bg-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 text-[#4A3B2A] font-semibold text-lg border-2 border-[#F9E4B7]"
+            className="px-8 py-4 bg-white rounded-full border-2 border-[#FF8C00] text-[#FF8C00] font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,140,0,0.6)] hover:scale-105"
           >
             Start Blank
           </button>
+
+          {/* Load CS Template - Honey Gold Theme */}
           <button
             onClick={() => createTree('cs')}
-            className="px-8 py-4 bg-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 text-[#4A3B2A] font-semibold text-lg border-2 border-[#F9E4B7]"
+            className="px-8 py-4 bg-white rounded-full border-2 border-[#FFD700] text-[#FFD700] font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:scale-105"
           >
             Load CS Template
           </button>
+
+          {/* Load Automation Template - Soft Green Theme */}
           <button
             onClick={() => createTree('automation')}
-            className="px-8 py-4 bg-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 text-[#4A3B2A] font-semibold text-lg border-2 border-[#F9E4B7]"
+            className="px-8 py-4 bg-white rounded-full border-2 border-[#4ECDC4] text-[#4ECDC4] font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] hover:scale-105"
           >
             Load Automation Template
           </button>
         </div>
 
         {recentTrees.length > 0 && (
-          <div className="mt-10 max-w-md mx-auto bg-white/70 border-2 border-[#F9E4B7] rounded-2xl shadow-sm p-4 text-left">
+          <div className="mt-10 max-w-md mx-auto bg-white/70 border-2 border-[#F9E4B7] rounded-2xl shadow-sm p-4 text-left relative z-10">
             <h2 className="text-lg font-bold text-[#4A3B2A] mb-3">Resume Recent Trees</h2>
             <div className="flex flex-col gap-2">
               {recentTrees.map(tree => (
