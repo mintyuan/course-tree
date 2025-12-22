@@ -33,24 +33,24 @@ export function ContactModal({ isOpen, onClose, contactInfo, isOwner, onSave }: 
   };
 
   return (
-    <div className="fixed inset-0 bg-[#4A3B2A]/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+    <div className="fixed inset-0 bg-[#5D4037]/50 flex items-center justify-center z-50 p-4">
+      <div className="speech-bubble max-w-md w-full p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[#4A3B2A]" style={{ fontFamily: "'Nunito', sans-serif" }}>
+          <h2 className="text-2xl font-bold text-[#5D4037]" style={{ fontFamily: "'Varela Round', sans-serif" }}>
             {isOwner ? 'Your Contact Info' : 'Contact Owner'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-[#F9E4B7]/50 rounded-full transition-colors"
+            className="p-2 hover:bg-[#F0F8F0] rounded-full transition-colors"
           >
-            <X size={24} className="text-[#4A3B2A]" />
+            <X size={24} className="text-[#5D4037]" />
           </button>
         </div>
 
         {isOwner ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#4A3B2A] mb-2">
+              <label className="block text-sm font-medium text-[#5D4037] mb-2">
                 WeChat ID / Email
               </label>
               <input
@@ -58,12 +58,12 @@ export function ContactModal({ isOpen, onClose, contactInfo, isOwner, onSave }: 
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Enter your contact info..."
-                className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-full focus:outline-none focus:border-[#FFD700] transition-colors bg-white text-[#4A3B2A]"
+                className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
               />
             </div>
             <button
               onClick={handleSave}
-              className="w-full px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#F9E4B7] text-[#4A3B2A] rounded-full font-semibold hover:shadow-lg transition-all hover:scale-105"
+              className="w-full px-6 py-3 bg-gradient-to-r from-[#F3D03E] to-[#78C850] text-[#5D4037] rounded-full font-semibold button-3d"
             >
               Save
             </button>
@@ -72,13 +72,13 @@ export function ContactModal({ isOpen, onClose, contactInfo, isOwner, onSave }: 
           <div className="space-y-4">
             {contactInfo ? (
               <>
-                <div className="bg-[#F9E4B7]/30 rounded-2xl p-4 border-2 border-[#F9E4B7]">
-                  <p className="text-sm text-[#4A3B2A]/70 mb-2">Contact Information:</p>
-                  <p className="text-lg font-semibold text-[#4A3B2A] break-all">{contactInfo}</p>
+                <div className="bg-[#F0F8F0] rounded-2xl p-4 border-3 border-[#E0E0E0]">
+                  <p className="text-sm text-[#5D4037]/70 mb-2">Contact Information:</p>
+                  <p className="text-lg font-semibold text-[#5D4037] break-all">{contactInfo}</p>
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#F9E4B7] text-[#4A3B2A] rounded-full font-semibold hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-[#F3D03E] to-[#78C850] text-[#5D4037] rounded-full font-semibold button-3d flex items-center justify-center gap-2"
                 >
                   <Copy size={18} />
                   {copied ? 'Copied!' : 'Copy'}
@@ -86,7 +86,7 @@ export function ContactModal({ isOpen, onClose, contactInfo, isOwner, onSave }: 
               </>
             ) : (
               <div className="text-center py-8">
-                <p className="text-[#4A3B2A]/70">No contact information available.</p>
+                <p className="text-[#5D4037]/70">No contact information available.</p>
               </div>
             )}
           </div>

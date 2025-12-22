@@ -74,18 +74,18 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFCF0] flex items-center justify-center px-4 relative">
+    <div className="min-h-screen bg-transparent flex items-center justify-center px-4 relative">
       {/* Particle Background */}
       <ParticleBackground />
 
       {/* Content with z-10 to appear above particles */}
       <div className="text-center relative z-10">
-        <h1 className="text-6xl font-bold text-[#4A3B2A] mb-12" style={{ fontFamily: "'Nunito', sans-serif" }}>CourseTree</h1>
+        <h1 className="text-6xl font-bold text-[#5D4037] mb-12" style={{ fontFamily: "'Varela Round', sans-serif" }}>CourseTree</h1>
         <div className="flex flex-col gap-4 max-w-md mx-auto">
           {/* Start Blank - Warm Orange Theme */}
           <button
             onClick={() => createTree('blank')}
-            className="px-8 py-4 bg-white rounded-full border-2 border-[#FF8C00] text-[#FF8C00] font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,140,0,0.6)] hover:scale-105"
+            className="px-8 py-4 bg-white rounded-full border-3 border-[#FF8C00] text-[#FF8C00] font-semibold text-lg button-3d"
           >
             Start Blank
           </button>
@@ -93,7 +93,7 @@ export function LandingPage() {
           {/* Load CS Template - Honey Gold Theme */}
           <button
             onClick={() => createTree('cs')}
-            className="px-8 py-4 bg-white rounded-full border-2 border-[#FFD700] text-[#FFD700] font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:scale-105"
+            className="px-8 py-4 bg-white rounded-full border-3 border-[#F3D03E] text-[#F3D03E] font-semibold text-lg button-3d"
           >
             Load CS Template
           </button>
@@ -101,7 +101,7 @@ export function LandingPage() {
           {/* Load Automation Template - Soft Green Theme */}
           <button
             onClick={() => createTree('automation')}
-            className="px-8 py-4 bg-white rounded-full border-2 border-[#4ECDC4] text-[#4ECDC4] font-semibold text-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(78,205,196,0.6)] hover:scale-105"
+            className="px-8 py-4 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-semibold text-lg button-3d"
           >
             Load Automation Template
           </button>
@@ -113,7 +113,7 @@ export function LandingPage() {
             {/* Trigger Button */}
             <button
               onClick={() => setShowRecent(!showRecent)}
-              className="px-6 py-3 bg-white rounded-full border-2 border-[#8B7355] text-[#8B7355] font-semibold text-base transition-all duration-300 hover:shadow-[0_0_15px_rgba(139,115,85,0.4)] hover:scale-105 w-full"
+              className="px-6 py-3 bg-white rounded-full border-3 border-[#8B7355] text-[#8B7355] font-semibold text-base button-3d w-full"
             >
               📂 Resume Recent Trees ({recentTrees.length})
             </button>
@@ -129,7 +129,7 @@ export function LandingPage() {
                   <button
                     key={tree.id}
                     onClick={() => navigate(`/?id=${tree.id}`)}
-                    className="w-full text-left px-5 py-4 rounded-2xl bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg text-[#4A3B2A] border border-[#F9E4B7]/50 hover:border-[#FFD700]"
+                    className="w-full text-left px-5 py-4 rounded-2xl bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg text-[#5D4037] border-3 border-[#E0E0E0] hover:border-[#78C850]"
                   >
                     <div className="font-bold text-lg">{tree.title || 'My Course Tree'}</div>
                   </button>

@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { TimelineHexagonGrid } from '../components/TimelineHexagonGrid';
 import { Course, TreeData, Resource } from '../types';
 import { supabase } from '../supabaseClient';
-import { Share2, MessageCircle, Edit2, Loader2, CheckCircle2 } from 'lucide-react';
+import { Share2, MessageCircle, Edit2, Loader2, CheckCircle2, Camera } from 'lucide-react';
 import { Toast } from '../components/Toast';
 import { ContactModal } from '../components/ContactModal';
+import html2canvas from 'html2canvas';
 
 // 数据迁移函数：将旧格式转换为新格式
 function migrateCourse(course: any): Course {
@@ -76,6 +77,7 @@ export function TreeView() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const likeAnimationRef = useRef<HTMLDivElement>(null);
+  const exportContainerRef = useRef<HTMLDivElement>(null);
 
   // Check if user is the owner
   const isOwner = treeId ? localStorage.getItem(`tree_owner_${treeId}`) === 'true' : false;
@@ -292,6 +294,89 @@ export function TreeView() {
     }
   };
 
+  // 导出为图片功能
+  const handleExportImage = async () => {
+    if (!exportContainerRef.current) return;
+
+    try {
+      const container = exportContainerRef.current;
+      const originalPosition = container.style.position;
+      const originalOverflow = container.style.overflow;
+
+      // 创建水印元素
+      const watermark = document.createElement('div');
+      watermark.style.cssText = `
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        color: #5D4037;
+        font-size: 14px;
+        font-family: 'Varela Round', sans-serif;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        border: 2px solid #E0E0E0;
+        z-index: 10000;
+        pointer-events: none;
+        white-space: nowrap;
+      `;
+      watermark.textContent = `Curated by ${treeData.title} on CourseTree 🍯`;
+
+      // 临时设置容器样式以确保正确捕获
+      container.style.position = 'relative';
+      container.style.overflow = 'visible';
+      
+      // 将水印添加到容器中
+      container.appendChild(watermark);
+
+      // 使用 html2canvas 捕获
+      const canvas = await html2canvas(container, {
+        backgroundColor: '#F0F8F0', // 使用主题背景色
+        scale: 2, // 提高图片质量
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+      // 恢复原始样式并移除水印
+      container.style.position = originalPosition;
+      container.style.overflow = originalOverflow;
+      if (container.contains(watermark)) {
+        container.removeChild(watermark);
+      }
+
+      // 转换为 blob 并下载
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          console.error('Failed to create blob');
+          setToastMessage('Failed to export image');
+          setShowToast(true);
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'My-CourseTree.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        setToastMessage('Image exported successfully!');
+        setShowToast(true);
+      }, 'image/png');
+    } catch (error) {
+      console.error('Failed to export image:', error);
+      setToastMessage('Failed to export image');
+      setShowToast(true);
+    }
+  };
+
   // 保存最近访问的树
   const addRecentTree = (id: string, title: string) => {
     try {
@@ -328,22 +413,22 @@ export function TreeView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FFFCF0] py-12 px-4 flex items-center justify-center">
-        <div className="text-[#4A3B2A] text-lg">加载中...</div>
+      <div className="min-h-screen bg-transparent py-12 px-4 flex items-center justify-center">
+        <div className="text-[#5D4037] text-lg">加载中...</div>
       </div>
     );
   }
 
   if (!treeId) {
     return (
-      <div className="min-h-screen bg-[#FFFCF0] py-12 px-4 flex items-center justify-center">
-        <div className="text-[#4A3B2A] text-lg">无效的树 ID</div>
+      <div className="min-h-screen bg-transparent py-12 px-4 flex items-center justify-center">
+        <div className="text-[#5D4037] text-lg">无效的树 ID</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFCF0] py-12 px-4">
+    <div className="min-h-screen bg-transparent py-12 px-4">
       <div className="max-w-full mx-auto max-w-7xl px-6">
         {/* Header Section */}
         <div className="mb-8">
@@ -362,8 +447,8 @@ export function TreeView() {
                         handleTitleSave();
                       }
                     }}
-                    className="text-3xl sm:text-4xl font-bold text-[#4A3B2A] bg-transparent border-b-2 border-[#4A3B2A] focus:outline-none w-full"
-                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                    className="text-3xl sm:text-4xl font-bold text-[#5D4037] bg-transparent border-b-2 border-[#5D4037] focus:outline-none w-full"
+                    style={{ fontFamily: "'Varela Round', sans-serif" }}
                     autoFocus
                   />
                 </div>
@@ -373,15 +458,15 @@ export function TreeView() {
                   className={`group flex items-center gap-2 ${isOwner ? 'cursor-pointer' : ''}`}
                 >
                   <h1
-                    className="text-3xl sm:text-4xl font-bold text-[#4A3B2A]"
-                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                    className="text-3xl sm:text-4xl font-bold text-[#5D4037]"
+                    style={{ fontFamily: "'Varela Round', sans-serif" }}
                   >
                     {treeData.title}
                   </h1>
                   {isOwner && (
                     <Edit2
                       size={18}
-                      className="text-[#4A3B2A]/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-[#5D4037]/60 opacity-0 group-hover:opacity-100 transition-opacity"
                     />
                   )}
                 </div>
@@ -392,10 +477,10 @@ export function TreeView() {
                 <button
                   onClick={handleLike}
                   disabled={isLiking || hasLiked}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-md transition-all font-medium ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border-3 border-[#F3D03E] transition-all font-medium button-3d ${
                     hasLiked
-                      ? 'bg-[#FFD700] text-[#4A3B2A] cursor-default'
-                      : 'bg-white text-[#4A3B2A] hover:shadow-lg hover:scale-105'
+                      ? 'bg-[#F3D03E] text-[#5D4037] cursor-default'
+                      : 'bg-white text-[#F3D03E]'
                   } disabled:opacity-60`}
                 >
                   <span className="text-2xl">🍯</span>
@@ -409,19 +494,19 @@ export function TreeView() {
               <div className="hidden sm:flex items-center gap-2 text-xs sm:text-sm min-w-[150px] justify-end">
                 {isSaving ? (
                   <>
-                    <Loader2 size={14} className="animate-spin text-[#4A3B2A]/80" />
-                    <span className="text-[#4A3B2A]/80">Saving...</span>
+                    <Loader2 size={14} className="animate-spin text-[#5D4037]/80" />
+                    <span className="text-[#5D4037]/80">Saving...</span>
                   </>
                 ) : !hasUnsavedChanges ? (
                   <>
-                    <CheckCircle2 size={14} className="text-[#4A3B2A]/80" />
-                    <span className="text-[#4A3B2A]/70">All changes saved</span>
+                    <CheckCircle2 size={14} className="text-[#5D4037]/80" />
+                    <span className="text-[#5D4037]/70">All changes saved</span>
                   </>
                 ) : null}
               </div>
               <button
                 onClick={() => setShowContactModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 text-[#4A3B2A] font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
               >
                 <MessageCircle size={18} />
                 <span className="hidden sm:inline">Ask me anything</span>
@@ -429,20 +514,30 @@ export function TreeView() {
               </button>
               <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 text-[#4A3B2A] font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
               >
                 <Share2 size={18} />
                 <span className="hidden sm:inline">分享</span>
+              </button>
+              <button
+                onClick={handleExportImage}
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#F3D03E] text-[#F3D03E] font-medium button-3d"
+                title="Save as Image"
+              >
+                <Camera size={18} />
+                <span className="hidden sm:inline">Export</span>
               </button>
             </div>
           </div>
         </div>
 
-        <TimelineHexagonGrid
-          courses={treeData.courses}
-          onCoursesChange={handleCoursesChange}
-          onCoursesChangeImmediate={handleCoursesDelete}
-        />
+        <div ref={exportContainerRef}>
+          <TimelineHexagonGrid
+            courses={treeData.courses}
+            onCoursesChange={handleCoursesChange}
+            onCoursesChangeImmediate={handleCoursesDelete}
+          />
+        </div>
       </div>
 
       {/* Toast Notification */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Course, Resource } from '../types';
 import { CourseModal } from './CourseModal';
-import { Plus } from 'lucide-react';
+import { Plus, Leaf } from 'lucide-react';
 
 const years = [1, 2, 3, 4] as const;
 
@@ -17,16 +17,34 @@ interface TimelineHexagonGridProps {
 }
 
 function Hexagon({ course, onClick }: HexagonProps) {
-  const getHexagonColor = (course: Course) => {
+  const getHexagonStyle = (course: Course) => {
     if (course.status === 'locked') {
-      return 'bg-[#E5E5E5] opacity-60';
+      return {
+        bg: 'bg-[#B0C4DE]',
+        border: 'border-3 border-[#8FA8C0]',
+        text: 'text-[#5D4037]',
+      };
     } else if (course.status === 'reviewed') {
-      return 'bg-[#FFD700] hexagon-glow';
+      return {
+        bg: 'bg-[#F3D03E]',
+        border: 'border-3 border-[#D4B82A]',
+        text: 'text-[#5D4037]',
+      };
     } else if (course.status === 'completed') {
-      return 'bg-[#F9E4B7]';
+      return {
+        bg: 'bg-[#78C850]',
+        border: 'border-3 border-[#5FA03A]',
+        text: 'text-white',
+      };
     }
-    return 'bg-[#E5E5E5]';
+    return {
+      bg: 'bg-[#B0C4DE]',
+      border: 'border-3 border-[#8FA8C0]',
+      text: 'text-[#5D4037]',
+    };
   };
+
+  const style = getHexagonStyle(course);
 
   return (
     <button
@@ -34,24 +52,24 @@ function Hexagon({ course, onClick }: HexagonProps) {
       className="flex items-center justify-center h-28 w-28 sm:h-32 sm:w-32 relative group cursor-pointer transition-transform duration-300 hover:scale-110 border-0 p-0"
       style={{
         clipPath: 'polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)',
-        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
       }}
     >
       <div
-        className={`absolute inset-0 flex items-center justify-center text-center ${getHexagonColor(course)} transition-all duration-300 rounded-lg`}
+        className={`absolute inset-0 flex items-center justify-center text-center ${style.bg} ${style.border} hexagon-stamp transition-all duration-300`}
         style={{
           clipPath: 'polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)',
+          borderWidth: '3px',
         }}
       >
-        <div className="px-2">
-          <p className="text-xs font-bold text-[#4A3B2A] leading-tight">
+        <div className="px-3 py-1">
+          <p className={`text-xs font-bold ${style.text} leading-tight line-clamp-3`}>
             {course.name}
           </p>
         </div>
       </div>
 
       <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[#4A3B2A] bg-opacity-85 rounded-lg flex items-center justify-center z-50 pointer-events-none"
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[#5D4037] bg-opacity-90 rounded-lg flex items-center justify-center z-50 pointer-events-none"
         style={{
           clipPath: 'polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)',
         }}
@@ -59,7 +77,7 @@ function Hexagon({ course, onClick }: HexagonProps) {
         <div className="text-white text-center px-3">
           <p className="font-semibold text-sm mb-1">{course.name}</p>
           {course.rating && (
-            <p className="text-xs text-[#FFD700]">★ {course.rating}/5</p>
+            <p className="text-xs text-[#F3D03E]">★ {course.rating}/5</p>
           )}
           <p className="text-xs text-gray-200 mt-2">Click to edit</p>
         </div>
@@ -165,16 +183,20 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
 
   return (
     <div className="w-full">
-      <div className="bg-white rounded-3xl shadow-xl p-4 sm:p-8">
+      <div className="mb-8 flex items-center justify-center gap-3">
+        <h1 className="text-5xl font-bold text-[#5D4037]" style={{ fontFamily: "'Varela Round', sans-serif" }}>CourseTree</h1>
+        <Leaf size={32} className="text-[#78C850]" />
+      </div>
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-8 border-3 border-[#E0E0E0]">
         <div className="overflow-x-auto pb-4">
           <div className="min-w-max">
             {/* Desktop: Horizontal layout */}
-            <div className="hidden md:flex gap-8 lg:gap-12 relative items-start">
+            <div className="hidden md:flex flex-row justify-start gap-16 px-10 relative items-start">
               {years.map((year, index) => {
                 const yearCourses = coursesByYear(year);
                 const isLast = index === years.length - 1;
                 return (
-                  <div key={year} className="flex flex-col items-center relative flex-1">
+                  <div key={year} className="flex flex-col items-center relative">
                     {/* Connector line (except for last column) */}
                     {!isLast && (
                       <div
@@ -182,14 +204,14 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
                         style={{
                           width: 'calc(2rem + 2rem)',
                           height: '2px',
-                          borderTop: '2px dashed #F9E4B7',
+                          borderTop: '2px dashed #78C850',
                           zIndex: 0,
                         }}
                       />
                     )}
                     <div className="mb-6 text-center relative z-10">
-                      <h2 className="text-xl font-bold text-[#4A3B2A]">Year {year}</h2>
-                      <p className="text-xs text-[#4A3B2A]/70 mt-1">
+                      <h2 className="text-xl font-bold text-[#5D4037]">Year {year}</h2>
+                      <p className="text-xs text-[#5D4037]/70 mt-1">
                         {year === 1
                           ? 'Freshman'
                           : year === 2
@@ -200,8 +222,8 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-4 items-center min-h-[200px]">
-                      {yearCourses.map(course => (
+                    <div className="flex flex-col items-center min-h-[200px] gap-y-6">
+                      {yearCourses.map((course) => (
                         <Hexagon
                           key={course.id}
                           course={course}
@@ -215,7 +237,7 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
 
                     <button
                       onClick={() => handleAddCourse(year)}
-                      className="mt-6 flex items-center gap-2 px-4 py-2 bg-[#F9E4B7] hover:bg-[#FFD700] rounded-full text-[#4A3B2A] text-sm font-medium transition-colors shadow-md hover:shadow-lg"
+                      className="mt-6 flex items-center gap-2 px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-sm font-medium"
                     >
                       <Plus size={16} />
                       Add Course
@@ -232,8 +254,8 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
                 return (
                   <div key={year} className="flex flex-col items-center">
                     <div className="mb-4 text-center">
-                      <h2 className="text-xl font-bold text-[#4A3B2A]">Year {year}</h2>
-                      <p className="text-xs text-[#4A3B2A]/70 mt-1">
+                      <h2 className="text-xl font-bold text-[#5D4037]">Year {year}</h2>
+                      <p className="text-xs text-[#5D4037]/70 mt-1">
                         {year === 1
                           ? 'Freshman'
                           : year === 2
@@ -244,8 +266,8 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-4 justify-center max-w-full">
-                      {yearCourses.map(course => (
+                    <div className="flex flex-col items-center max-w-full gap-y-6">
+                      {yearCourses.map((course) => (
                         <Hexagon
                           key={course.id}
                           course={course}
@@ -259,7 +281,7 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
 
                     <button
                       onClick={() => handleAddCourse(year)}
-                      className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#F9E4B7] hover:bg-[#FFD700] rounded-full text-[#4A3B2A] text-sm font-medium transition-colors shadow-md hover:shadow-lg"
+                      className="mt-4 flex items-center gap-2 px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-sm font-medium"
                     >
                       <Plus size={16} />
                       Add Course
@@ -272,30 +294,33 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-[#4A3B2A]">
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-[#5D4037]">
         <div className="flex items-center gap-2">
           <div
-            className="w-6 h-6 bg-[#E5E5E5] opacity-60"
+            className="w-6 h-6 bg-[#B0C4DE] border-3 border-[#8FA8C0]"
             style={{
               clipPath: 'polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)',
+              borderWidth: '3px',
             }}
           />
           <span>Locked (Not Yet Available)</span>
         </div>
         <div className="flex items-center gap-2">
           <div
-            className="w-6 h-6 bg-[#F9E4B7]"
+            className="w-6 h-6 bg-[#78C850] border-3 border-[#5FA03A]"
             style={{
               clipPath: 'polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)',
+              borderWidth: '3px',
             }}
           />
           <span>Completed</span>
         </div>
         <div className="flex items-center gap-2">
           <div
-            className="w-6 h-6 bg-[#FFD700] hexagon-glow"
+            className="w-6 h-6 bg-[#F3D03E] border-3 border-[#D4B82A] hexagon-stamp"
             style={{
               clipPath: 'polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%)',
+              borderWidth: '3px',
             }}
           />
           <span>Reviewed (With Rating)</span>

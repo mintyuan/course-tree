@@ -59,23 +59,23 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
 
   const statusColor =
     course.status === 'locked'
-      ? 'bg-[#E5E5E5] text-[#4A3B2A]'
+      ? 'bg-[#B0C4DE] text-[#5D4037]'
       : course.status === 'reviewed'
-        ? 'bg-[#FFD700] text-[#4A3B2A]'
-        : 'bg-[#F9E4B7] text-[#4A3B2A]';
+        ? 'bg-[#F3D03E] text-[#5D4037]'
+        : 'bg-[#78C850] text-white';
 
   return (
-    <div className="fixed inset-0 bg-[#4A3B2A]/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ borderRadius: '2rem' }}>
-        <div className="sticky top-0 bg-gradient-to-r from-[#F9E4B7] to-[#FFD700] px-6 sm:px-8 py-6 flex items-center justify-between border-b-2 border-[#FFD700]/30 rounded-t-3xl">
+    <div className="fixed inset-0 bg-[#5D4037]/50 flex items-center justify-center z-50 p-4">
+      <div className="speech-bubble max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 diagonal-stripes px-6 sm:px-8 py-6 flex items-center justify-between border-b-3 border-[#E0E0E0] rounded-t-3xl bg-white">
           <div className="flex-1">
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="text-2xl sm:text-3xl font-bold text-[#4A3B2A] bg-transparent border-b-2 border-transparent hover:border-[#4A3B2A]/30 focus:border-[#4A3B2A] focus:outline-none w-full"
+              className="text-2xl sm:text-3xl font-bold text-[#5D4037] bg-transparent border-b-3 border-transparent hover:border-[#5D4037]/30 focus:border-[#5D4037] focus:outline-none w-full"
               placeholder="Course Name"
-              style={{ fontFamily: "'Nunito', sans-serif" }}
+              style={{ fontFamily: "'Varela Round', sans-serif" }}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -90,18 +90,18 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
               onClick={onClose}
               className="p-2 hover:bg-white/50 rounded-full transition-colors"
             >
-              <X size={24} className="text-[#4A3B2A]" />
+              <X size={24} className="text-[#5D4037]" />
             </button>
           </div>
         </div>
 
-        <div className="px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-          <div className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${statusColor}`}>
+        <div className="px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 bg-white">
+          <div className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${statusColor} border-3 border-[#E0E0E0]`}>
             {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
           </div>
 
-          <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
-            <h3 className="text-lg sm:text-xl font-bold text-[#4A3B2A] mb-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
+          <div className="bg-[#F0F8F0] rounded-3xl p-4 sm:p-6 border-3 border-[#E0E0E0]">
+            <h3 className="text-lg sm:text-xl font-bold text-[#5D4037] mb-4" style={{ fontFamily: "'Varela Round', sans-serif" }}>
               How was the prof?
             </h3>
             <div className="flex gap-2 sm:gap-3 text-4xl sm:text-5xl">
@@ -116,7 +116,7 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
                   <span
                     className={
                       star <= (hoverRating || rating)
-                        ? 'text-[#FFD700]'
+                        ? 'text-[#F3D03E]'
                         : 'text-[#E5E5E5]'
                     }
                   >
@@ -126,30 +126,30 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
               ))}
             </div>
             {rating > 0 && (
-              <p className="mt-3 text-sm text-[#4A3B2A] font-medium">
+              <p className="mt-3 text-sm text-[#5D4037] font-medium">
                 You rated: {rating}/5 stars
               </p>
             )}
           </div>
 
           {/* Professor Review */}
-          <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
-            <h3 className="text-lg sm:text-xl font-bold text-[#4A3B2A] mb-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
+          <div className="bg-[#F0F8F0] rounded-3xl p-4 sm:p-6 border-3 border-[#E0E0E0]">
+            <h3 className="text-lg sm:text-xl font-bold text-[#5D4037] mb-4" style={{ fontFamily: "'Varela Round', sans-serif" }}>
               Comments on the Prof...
             </h3>
-            <p className="text-sm text-[#4A3B2A]/80 mb-3">(Optional)</p>
+            <p className="text-sm text-[#5D4037]/80 mb-3">(Optional)</p>
             <textarea
               value={profReview}
               onChange={e => setProfReview(e.target.value)}
               placeholder="Share your thoughts about the professor..."
-              className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-2xl focus:outline-none focus:border-[#FFD700] transition-colors resize-none bg-white text-[#4A3B2A]"
+              className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-2xl focus:outline-none focus:border-[#78C850] transition-colors resize-none bg-white text-[#5D4037]"
               rows={3}
             />
           </div>
 
           {/* Resources Section */}
-          <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
-            <h3 className="text-lg sm:text-xl font-bold text-[#4A3B2A] mb-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
+          <div className="bg-[#F0F8F0] rounded-3xl p-4 sm:p-6 border-3 border-[#E0E0E0]">
+            <h3 className="text-lg sm:text-xl font-bold text-[#5D4037] mb-4" style={{ fontFamily: "'Varela Round', sans-serif" }}>
               Resources
             </h3>
             
@@ -159,19 +159,19 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
                 {resources.map(resource => (
                   <div
                     key={resource.id}
-                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#F9E4B7] group hover:border-[#FFD700] transition-colors"
+                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#E0E0E0] group hover:border-[#78C850] transition-colors"
                   >
-                    <LinkIcon size={18} className="text-[#4A3B2A] flex-shrink-0" />
+                    <LinkIcon size={18} className="text-[#5D4037] flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#4A3B2A] truncate">{resource.title}</p>
-                      <p className="text-xs text-[#4A3B2A]/60 truncate">{resource.url}</p>
+                      <p className="text-sm font-medium text-[#5D4037] truncate">{resource.title}</p>
+                      <p className="text-xs text-[#5D4037]/60 truncate">{resource.url}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <a
                         href={resource.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1 bg-[#F9E4B7] hover:bg-[#FFD700] rounded-full text-xs font-medium text-[#4A3B2A] transition-colors"
+                        className="px-3 py-1 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-xs font-medium text-[#5D4037] transition-colors"
                       >
                         Open
                       </a>
@@ -196,7 +196,7 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
                 onChange={e => setNewResourceUrl(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleAddResource()}
                 placeholder="https://youtube.com/watch?v=..."
-                className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-full focus:outline-none focus:border-[#FFD700] transition-colors bg-white text-[#4A3B2A]"
+                className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
               />
               <input
                 type="text"
@@ -204,11 +204,11 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
                 onChange={e => setNewResourceTitle(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleAddResource()}
                 placeholder="Title/Note (e.g., Bilibili Playlist)"
-                className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-full focus:outline-none focus:border-[#FFD700] transition-colors bg-white text-[#4A3B2A]"
+                className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
               />
               <button
                 onClick={handleAddResource}
-                className="w-full px-4 py-2 bg-[#F9E4B7] hover:bg-[#FFD700] rounded-full text-[#4A3B2A] font-medium transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-[#5D4037] font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Plus size={16} />
                 Add
@@ -216,11 +216,11 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
             </div>
           </div>
 
-          <div className="bg-[#F9E4B7]/30 rounded-3xl p-4 sm:p-6 border-2 border-[#F9E4B7]">
-            <h3 className="text-lg sm:text-xl font-bold text-[#4A3B2A] mb-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
+          <div className="bg-[#F0F8F0] rounded-3xl p-4 sm:p-6 border-3 border-[#E0E0E0]">
+            <h3 className="text-lg sm:text-xl font-bold text-[#5D4037] mb-4" style={{ fontFamily: "'Varela Round', sans-serif" }}>
               One-Liner
             </h3>
-            <p className="text-sm text-[#4A3B2A]/80 mb-3">
+            <p className="text-sm text-[#5D4037]/80 mb-3">
               Quick tip or takeaway ({oneLiner.length}/140)
             </p>
             <textarea
@@ -230,7 +230,7 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
               }
               maxLength={140}
               placeholder="Share your best tip or lesson learned..."
-              className="w-full px-4 py-3 border-2 border-[#F9E4B7] rounded-2xl focus:outline-none focus:border-[#FFD700] transition-colors resize-none bg-white text-[#4A3B2A]"
+              className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-2xl focus:outline-none focus:border-[#78C850] transition-colors resize-none bg-white text-[#5D4037]"
               rows={3}
             />
           </div>
@@ -238,13 +238,13 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-3 border-2 border-[#F9E4B7] text-[#4A3B2A] rounded-full font-semibold hover:bg-[#F9E4B7] transition-colors"
+              className="flex-1 px-6 py-3 bg-white border-3 border-[#5D4037] text-[#5D4037] rounded-full font-semibold button-3d"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#F9E4B7] text-[#4A3B2A] rounded-full font-semibold hover:shadow-lg transition-all hover:scale-105"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F3D03E] to-[#78C850] text-white rounded-full font-semibold button-3d"
             >
               Save & Review
             </button>
