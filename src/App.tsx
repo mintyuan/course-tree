@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { LandingPage } from './pages/LandingPage';
 import { TreeView } from './pages/TreeView';
+import { cleanupDuplicateRecentTrees } from './utils/recentTrees';
 
 function RootRoute() {
   const [searchParams] = useSearchParams();
@@ -14,6 +16,11 @@ function RootRoute() {
 }
 
 function App() {
+  // 清理重复项（自愈功能）- 在应用启动时运行一次
+  useEffect(() => {
+    cleanupDuplicateRecentTrees();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

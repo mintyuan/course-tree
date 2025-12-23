@@ -4,12 +4,7 @@ import { supabase } from '../supabaseClient';
 import { csTemplate, automationTemplate, blankTemplate } from '../templates';
 import { TreeData } from '../types';
 import { ParticleBackground } from '../components/ParticleBackground';
-
-interface RecentTree {
-  id: string;
-  title: string;
-  timestamp: number;
-}
+import { getRecentTrees, saveToHistory, type RecentTree } from '../utils/recentTrees';
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -17,13 +12,9 @@ export function LandingPage() {
   const [showRecent, setShowRecent] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('recent_trees');
-      const list: RecentTree[] = stored ? JSON.parse(stored) : [];
-      setRecentTrees(list.slice(0, 5));
-    } catch (err) {
-      console.error('Failed to load recent trees:', err);
-    }
+    // 读取最近访问列表
+    const list = getRecentTrees();
+    setRecentTrees(list);
   }, []);
 
   const createTree = async (template: 'blank' | 'cs' | 'automation') => {
@@ -62,9 +53,8 @@ export function LandingPage() {
         // Store tree ID in localStorage to identify owner
         localStorage.setItem(`tree_owner_${data.id}`, 'true');
         localStorage.setItem(`tree_just_created_${data.id}`, 'true');
-        const recentEntry: RecentTree = { id: data.id, title: treeData.title, timestamp: Date.now() };
-        const updatedRecent = [recentEntry, ...recentTrees.filter(item => item.id !== data.id)].slice(0, 5);
-        localStorage.setItem('recent_trees', JSON.stringify(updatedRecent));
+        // 使用统一的保存函数（严格去重），并立即更新 UI 状态
+        const updatedRecent = saveToHistory({ id: data.id, title: treeData.title });
         setRecentTrees(updatedRecent);
         navigate(`/?id=${data.id}`);
       }

@@ -7,6 +7,7 @@ import { Share2, MessageCircle, Edit2, Loader2, CheckCircle2, Camera } from 'luc
 import { Toast } from '../components/Toast';
 import { ContactModal } from '../components/ContactModal';
 import html2canvas from 'html2canvas';
+import { saveToHistory } from '../utils/recentTrees';
 
 // 数据迁移函数：将旧格式转换为新格式
 function migrateCourse(course: any): Course {
@@ -135,7 +136,8 @@ export function TreeView() {
                 contact_info: null,
               });
               setTitleValue('My Course Tree');
-              addRecentTree(treeId, 'My Course Tree');
+              // 保存到历史记录（树加载时）
+              saveToHistory({ id: treeId, title: 'My Course Tree' });
             } else if (parsed && typeof parsed === 'object') {
               // New format: TreeData object - migrate courses
               const courses = parsed.courses || [];
@@ -147,8 +149,8 @@ export function TreeView() {
                 contact_info: parsed.contact_info || null,
               });
               setTitleValue(parsed.title || 'My Course Tree');
-              // 保存最近访问
-              addRecentTree(treeId, parsed.title || 'My Course Tree');
+              // 保存到历史记录（树加载时，使用最新标题）
+              saveToHistory({ id: treeId, title: parsed.title || 'My Course Tree' });
             }
           } catch (parseError) {
             console.error('Error parsing content:', parseError);
@@ -220,7 +222,9 @@ export function TreeView() {
     setHasUnsavedChanges(true);
     saveTreeData(updatedTreeData);
     if (treeId) {
-      addRecentTree(treeId, updatedTreeData.title);
+      // 立即同步标题到历史记录（使用最新标题）
+      // 注意：这里不更新 UI 状态，因为这是 TreeView 页面，不是 LandingPage
+      saveToHistory({ id: treeId, title: updatedTreeData.title });
     }
   };
 
@@ -260,7 +264,7 @@ export function TreeView() {
     setHasUnsavedChanges(true);
     saveTreeData(updatedTreeData);
     if (treeId) {
-      addRecentTree(treeId, treeData.title);
+      saveToHistory({ id: treeId, title: treeData.title });
     }
   };
 
@@ -377,18 +381,6 @@ export function TreeView() {
     }
   };
 
-  // 保存最近访问的树
-  const addRecentTree = (id: string, title: string) => {
-    try {
-      const existing = localStorage.getItem('recent_trees');
-      const list: { id: string; title: string; timestamp: number }[] = existing ? JSON.parse(existing) : [];
-      const filtered = list.filter(item => item.id !== id);
-      const newList = [{ id, title, timestamp: Date.now() }, ...filtered].slice(0, 5);
-      localStorage.setItem('recent_trees', JSON.stringify(newList));
-    } catch (err) {
-      console.error('Failed to store recent trees:', err);
-    }
-  };
 
   // 删除课程时立即保存
   const handleCoursesDelete = useCallback((updatedCourses: Course[]) => {
