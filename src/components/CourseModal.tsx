@@ -15,9 +15,10 @@ interface CourseModalProps {
   ) => void;
   onDelete: (courseId: string) => void;
   isNew?: boolean;
+  isOwner?: boolean; // 是否拥有者，控制删除按钮显示
 }
 
-export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }: CourseModalProps) {
+export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, isOwner = false }: CourseModalProps) {
   const [name, setName] = useState(course.name);
   const [rating, setRating] = useState(course.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -79,13 +80,15 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false }
             />
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleDelete}
-              className="p-2 hover:bg-red-100 rounded-full transition-colors text-red-600"
-              title="Delete Course"
-            >
-              <Trash2 size={20} />
-            </button>
+            {isOwner && (
+              <button
+                onClick={handleDelete}
+                className="p-2 hover:bg-red-100 rounded-full transition-colors text-red-600"
+                title="Delete Course"
+              >
+                <Trash2 size={20} />
+              </button>
+            )}
             <button
               onClick={onClose}
               className="p-2 hover:bg-white/50 rounded-full transition-colors"

@@ -21,4 +21,5 @@ export interface TreeData {
   title: string;
   likes: number;
   contact_info: string | null;
+  author_name?: string; // Optional for backward compatibility
 }

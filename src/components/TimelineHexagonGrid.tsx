@@ -14,6 +14,7 @@ interface TimelineHexagonGridProps {
   courses: Course[];
   onCoursesChange: (courses: Course[]) => void;
   onCoursesChangeImmediate?: (courses: Course[]) => void;
+  isOwner?: boolean; // 是否拥有者，控制编辑功能显示
 }
 
 function Hexagon({ course, onClick }: HexagonProps) {
@@ -86,7 +87,7 @@ function Hexagon({ course, onClick }: HexagonProps) {
   );
 }
 
-export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeImmediate }: TimelineHexagonGridProps) {
+export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeImmediate, isOwner = false }: TimelineHexagonGridProps) {
   const [localCourses, setLocalCourses] = useState<Course[]>(courses);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedIsNew, setSelectedIsNew] = useState(false);
@@ -279,13 +280,15 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
                       ))}
                     </div>
 
-                    <button
-                      onClick={() => handleAddCourse(year)}
-                      className="mt-4 flex items-center gap-2 px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-sm font-medium"
-                    >
-                      <Plus size={16} />
-                      Add Course
-                    </button>
+                    {isOwner && (
+                      <button
+                        onClick={() => handleAddCourse(year)}
+                        className="mt-4 flex items-center gap-2 px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-sm font-medium"
+                      >
+                        <Plus size={16} />
+                        Add Course
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -334,6 +337,7 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
           onSave={handleSaveCourse}
           onDelete={handleDeleteCourse}
           isNew={selectedIsNew}
+          isOwner={isOwner}
         />
       )}
     </div>

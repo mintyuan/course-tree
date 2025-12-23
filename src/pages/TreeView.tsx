@@ -8,6 +8,8 @@ import { Toast } from '../components/Toast';
 import { ContactModal } from '../components/ContactModal';
 import html2canvas from 'html2canvas';
 import { saveToHistory } from '../utils/recentTrees';
+import { isTreeOwner, addToOwnedTrees, isTreeCollected, toggleCollectTree } from '../utils/ownership';
+import { useNavigate } from 'react-router-dom';
 
 // 数据迁移函数：将旧格式转换为新格式
 function migrateCourse(course: any): Course {
@@ -59,12 +61,14 @@ function migrateCourse(course: any): Course {
 
 export function TreeView() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const treeId = searchParams.get('id');
   const [treeData, setTreeData] = useState<TreeData>({
     courses: [],
     title: 'My Course Tree',
     likes: 0,
     contact_info: null,
+    author_name: 'Anonymous',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,15 +77,14 @@ export function TreeView() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [isLiking, setIsLiking] = useState(false);
-  const [hasLiked, setHasLiked] = useState(false);
+  const [isCollected, setIsCollected] = useState(false);
+  const [isForking, setIsForking] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const likeAnimationRef = useRef<HTMLDivElement>(null);
   const exportContainerRef = useRef<HTMLDivElement>(null);
 
-  // Check if user is the owner
-  const isOwner = treeId ? localStorage.getItem(`tree_owner_${treeId}`) === 'true' : false;
+  // Check if user is the owner using new ownership system
+  const isOwner = isTreeOwner(treeId);
 
   // 加载数据
   useEffect(() => {
@@ -89,9 +92,8 @@ export function TreeView() {
       setIsLoading(false);
       return;
     }
-    // 初始化点赞状态
-    const liked = localStorage.getItem(`tree_liked_${treeId}`) === 'true';
-    setHasLiked(liked);
+    // 初始化收藏状态
+    setIsCollected(isTreeCollected(treeId));
 
     // Safe entry 一次性提示
     const justCreatedKey = `tree_just_created_${treeId}`;
@@ -134,6 +136,7 @@ export function TreeView() {
                 title: 'My Course Tree',
                 likes: 0,
                 contact_info: null,
+                author_name: 'Anonymous',
               });
               setTitleValue('My Course Tree');
               // 保存到历史记录（树加载时）
@@ -147,6 +150,7 @@ export function TreeView() {
                 title: parsed.title || 'My Course Tree',
                 likes: parsed.likes || 0,
                 contact_info: parsed.contact_info || null,
+                author_name: parsed.author_name || 'Anonymous',
               });
               setTitleValue(parsed.title || 'My Course Tree');
               // 保存到历史记录（树加载时，使用最新标题）
@@ -228,34 +232,6 @@ export function TreeView() {
     }
   };
 
-  // 处理点赞
-  const handleLike = async () => {
-    if (isLiking || hasLiked) return;
-    
-    setIsLiking(true);
-    const updatedTreeData = { ...treeData, likes: treeData.likes + 1 };
-    setTreeData(updatedTreeData);
-    setHasLiked(true);
-    if (treeId) {
-      localStorage.setItem(`tree_liked_${treeId}`, 'true');
-    }
-    
-    // Trigger animation
-    if (likeAnimationRef.current) {
-      likeAnimationRef.current.classList.add('animate-bounce');
-      setTimeout(() => {
-        likeAnimationRef.current?.classList.remove('animate-bounce');
-      }, 600);
-    }
-
-    try {
-      await saveTreeData(updatedTreeData);
-    } catch (err) {
-      console.error('Error saving like:', err);
-    } finally {
-      setIsLiking(false);
-    }
-  };
 
   // 处理联系信息保存
   const handleContactSave = (contactInfo: string) => {
@@ -265,6 +241,69 @@ export function TreeView() {
     saveTreeData(updatedTreeData);
     if (treeId) {
       saveToHistory({ id: treeId, title: treeData.title });
+    }
+  };
+
+  // 处理收藏/取消收藏
+  const handleToggleCollect = () => {
+    if (!treeId) return;
+    toggleCollectTree({
+      id: treeId,
+      title: treeData.title,
+      author_name: treeData.author_name,
+    });
+    setIsCollected(isTreeCollected(treeId));
+  };
+
+  // 处理 Fork/Remix
+  const handleFork = async () => {
+    if (!treeId || isForking) return;
+
+    setIsForking(true);
+    try {
+      // 复制当前树的数据
+      const forkedData: TreeData = {
+        courses: treeData.courses.map(course => ({
+          ...course,
+          id: `course-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // 生成新 ID
+        })),
+        title: `${treeData.title} (Remix)`,
+        likes: 0,
+        contact_info: null,
+        author_name: treeData.author_name || 'Anonymous', // 保留原始作者名（如果存在）
+      };
+
+      // 插入新行到 Supabase
+      const { data, error } = await supabase
+        .from('trees')
+        .insert({ content: forkedData })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error forking tree:', error);
+        setToastMessage('Failed to fork tree');
+        setShowToast(true);
+        return;
+      }
+
+      if (data && data.id) {
+        // 添加到拥有列表
+        addToOwnedTrees(data.id);
+        // 保存到历史记录
+        saveToHistory({ id: data.id, title: forkedData.title });
+        // 显示成功消息
+        setToastMessage('Tree forked! You can now edit your copy.');
+        setShowToast(true);
+        // 重定向到新 URL
+        navigate(`/?id=${data.id}`);
+      }
+    } catch (err) {
+      console.error('Unexpected error forking tree:', err);
+      setToastMessage('Failed to fork tree');
+      setShowToast(true);
+    } finally {
+      setIsForking(false);
     }
   };
 
@@ -427,7 +466,7 @@ export function TreeView() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             {/* Title and Like Button */}
             <div className="flex items-center gap-4 flex-1">
-              {isEditingTitle ? (
+              {isOwner && isEditingTitle ? (
                 <div className="flex items-center gap-2 flex-1">
                   <input
                     type="text"
@@ -446,7 +485,7 @@ export function TreeView() {
                 </div>
               ) : (
                 <div
-                  onClick={handleTitleEdit}
+                  onClick={isOwner ? handleTitleEdit : undefined}
                   className={`group flex items-center gap-2 ${isOwner ? 'cursor-pointer' : ''}`}
                 >
                   <h1
@@ -464,46 +503,49 @@ export function TreeView() {
                 </div>
               )}
               
-              {/* Give Honey Button */}
-              <div ref={likeAnimationRef} className="inline-block">
+              {/* Collection/Star Button (for visitors) */}
+              {!isOwner && (
                 <button
-                  onClick={handleLike}
-                  disabled={isLiking || hasLiked}
+                  onClick={handleToggleCollect}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full border-3 border-[#F3D03E] transition-all font-medium button-3d ${
-                    hasLiked
-                      ? 'bg-[#F3D03E] text-[#5D4037] cursor-default'
+                    isCollected
+                      ? 'bg-[#F3D03E] text-[#5D4037]'
                       : 'bg-white text-[#F3D03E]'
-                  } disabled:opacity-60`}
+                  }`}
                 >
-                  <span className="text-2xl">🍯</span>
-                  <span className="font-semibold">{treeData.likes}</span>
+                  <span className="text-xl">{isCollected ? '⭐️' : '☆'}</span>
+                  <span className="font-semibold">{isCollected ? 'Saved' : 'Save'}</span>
                 </button>
-              </div>
+              )}
             </div>
 
             {/* Right Side Buttons */}
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 text-xs sm:text-sm min-w-[150px] justify-end">
-                {isSaving ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin text-[#5D4037]/80" />
-                    <span className="text-[#5D4037]/80">Saving...</span>
-                  </>
-                ) : !hasUnsavedChanges ? (
-                  <>
-                    <CheckCircle2 size={14} className="text-[#5D4037]/80" />
-                    <span className="text-[#5D4037]/70">All changes saved</span>
-                  </>
-                ) : null}
-              </div>
-              <button
-                onClick={() => setShowContactModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
-              >
-                <MessageCircle size={18} />
-                <span className="hidden sm:inline">Ask me anything</span>
-                <span className="sm:hidden">Contact</span>
-              </button>
+              {isOwner && (
+                <div className="hidden sm:flex items-center gap-2 text-xs sm:text-sm min-w-[150px] justify-end">
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-[#5D4037]/80" />
+                      <span className="text-[#5D4037]/80">Saving...</span>
+                    </>
+                  ) : !hasUnsavedChanges ? (
+                    <>
+                      <CheckCircle2 size={14} className="text-[#5D4037]/80" />
+                      <span className="text-[#5D4037]/70">All changes saved</span>
+                    </>
+                  ) : null}
+                </div>
+              )}
+              {isOwner && (
+                <button
+                  onClick={() => setShowContactModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
+                >
+                  <MessageCircle size={18} />
+                  <span className="hidden sm:inline">Ask me anything</span>
+                  <span className="sm:hidden">Contact</span>
+                </button>
+              )}
               <button
                 onClick={handleShare}
                 className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
@@ -511,14 +553,36 @@ export function TreeView() {
                 <Share2 size={18} />
                 <span className="hidden sm:inline">分享</span>
               </button>
-              <button
-                onClick={handleExportImage}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#F3D03E] text-[#F3D03E] font-medium button-3d"
-                title="Save as Image"
-              >
-                <Camera size={18} />
-                <span className="hidden sm:inline">Export</span>
-              </button>
+              {isOwner && (
+                <button
+                  onClick={handleExportImage}
+                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#F3D03E] text-[#F3D03E] font-medium button-3d"
+                  title="Save as Image"
+                >
+                  <Camera size={18} />
+                  <span className="hidden sm:inline">Export</span>
+                </button>
+              )}
+              {!isOwner && (
+                <button
+                  onClick={handleFork}
+                  disabled={isForking}
+                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#FF8C00] text-[#FF8C00] font-medium button-3d disabled:opacity-60"
+                >
+                  {isForking ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Forking...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xl">⚡️</span>
+                      <span className="hidden sm:inline">Fork this Tree</span>
+                      <span className="sm:hidden">Fork</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
