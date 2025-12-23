@@ -536,16 +536,15 @@ export function TreeView() {
                   ) : null}
                 </div>
               )}
-              {isOwner && (
-                <button
-                  onClick={() => setShowContactModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
-                >
-                  <MessageCircle size={18} />
-                  <span className="hidden sm:inline">Ask me anything</span>
-                  <span className="sm:hidden">Contact</span>
-                </button>
-              )}
+              {/* Contact Button - Visible to everyone */}
+              <button
+                onClick={() => setShowContactModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
+              >
+                <MessageCircle size={18} />
+                <span className="hidden sm:inline">{isOwner ? 'Ask me anything' : 'Contact Owner'}</span>
+                <span className="sm:hidden">Contact</span>
+              </button>
               <button
                 onClick={handleShare}
                 className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-3 border-[#78C850] text-[#78C850] font-medium button-3d"
@@ -592,6 +591,7 @@ export function TreeView() {
             courses={treeData.courses}
             onCoursesChange={handleCoursesChange}
             onCoursesChangeImmediate={handleCoursesDelete}
+            isOwner={isOwner}
           />
         </div>
       </div>
