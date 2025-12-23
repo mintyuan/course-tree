@@ -16,15 +16,22 @@ interface CourseModalProps {
   onDelete: (courseId: string) => void;
   isNew?: boolean;
   isOwner?: boolean; // 是否拥有者，控制删除按钮显示
+  isReadOnly?: boolean; // 是否只读模式（访客查看）
 }
 
-export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, isOwner = false }: CourseModalProps) {
+export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, isOwner = false, isReadOnly = false }: CourseModalProps) {
   const [name, setName] = useState(course.name);
   const [rating, setRating] = useState(course.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
   const [resources, setResources] = useState<Resource[]>(course.resources || []);
   const [oneLiner, setOneLiner] = useState(course.review || '');
   const [profReview, setProfReview] = useState(course.prof_review || '');
+  
+  // 在只读模式下，使用课程的原始数据
+  const displayRating = isReadOnly ? (course.rating || 0) : rating;
+  const displayName = isReadOnly ? course.name : name;
+  const displayOneLiner = isReadOnly ? (course.review || '') : oneLiner;
+  const displayProfReview = isReadOnly ? (course.prof_review || '') : profReview;
   
   // 添加资源的输入状态
   const [newResourceUrl, setNewResourceUrl] = useState('');
@@ -70,17 +77,26 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, 
       <div className="speech-bubble max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 z-10 diagonal-stripes px-6 sm:px-8 py-6 flex items-center justify-between border-b-3 border-[#E0E0E0] rounded-t-3xl bg-white">
           <div className="flex-1">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="text-2xl sm:text-3xl font-bold text-[#5D4037] bg-transparent border-b-3 border-transparent hover:border-[#5D4037]/30 focus:border-[#5D4037] focus:outline-none w-full"
-              placeholder="Course Name"
-              style={{ fontFamily: "'Varela Round', sans-serif" }}
-            />
+            {isReadOnly ? (
+              <h2
+                className="text-2xl sm:text-3xl font-bold text-[#5D4037] w-full"
+                style={{ fontFamily: "'Varela Round', sans-serif" }}
+              >
+                {displayName}
+              </h2>
+            ) : (
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="text-2xl sm:text-3xl font-bold text-[#5D4037] bg-transparent border-b-3 border-transparent hover:border-[#5D4037]/30 focus:border-[#5D4037] focus:outline-none w-full"
+                placeholder="Course Name"
+                style={{ fontFamily: "'Varela Round', sans-serif" }}
+              />
+            )}
           </div>
           <div className="flex items-center gap-2">
-            {isOwner && (
+            {!isReadOnly && isOwner && (
               <button
                 onClick={handleDelete}
                 className="p-2 hover:bg-red-100 rounded-full transition-colors text-red-600"
@@ -109,28 +125,41 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, 
             </h3>
             <div className="flex gap-2 sm:gap-3 text-4xl sm:text-5xl">
               {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => setRating(star)}
-                  className="transition-transform duration-200 hover:scale-110 cursor-pointer"
-                >
+                isReadOnly ? (
                   <span
+                    key={star}
                     className={
-                      star <= (hoverRating || rating)
+                      star <= displayRating
                         ? 'text-[#F3D03E]'
                         : 'text-[#E5E5E5]'
                     }
                   >
                     ★
                   </span>
-                </button>
+                ) : (
+                  <button
+                    key={star}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => setRating(star)}
+                    className="transition-transform duration-200 hover:scale-110 cursor-pointer"
+                  >
+                    <span
+                      className={
+                        star <= (hoverRating || rating)
+                          ? 'text-[#F3D03E]'
+                          : 'text-[#E5E5E5]'
+                      }
+                    >
+                      ★
+                    </span>
+                  </button>
+                )
               ))}
             </div>
-            {rating > 0 && (
+            {displayRating > 0 && (
               <p className="mt-3 text-sm text-[#5D4037] font-medium">
-                You rated: {rating}/5 stars
+                {isReadOnly ? 'Rated' : 'You rated'}: {displayRating}/5 stars
               </p>
             )}
           </div>
@@ -140,14 +169,22 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, 
             <h3 className="text-lg sm:text-xl font-bold text-[#5D4037] mb-4" style={{ fontFamily: "'Varela Round', sans-serif" }}>
               Comments on the Prof...
             </h3>
-            <p className="text-sm text-[#5D4037]/80 mb-3">(Optional)</p>
-            <textarea
-              value={profReview}
-              onChange={e => setProfReview(e.target.value)}
-              placeholder="Share your thoughts about the professor..."
-              className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-2xl focus:outline-none focus:border-[#78C850] transition-colors resize-none bg-white text-[#5D4037]"
-              rows={3}
-            />
+            {isReadOnly ? (
+              <p className="text-sm text-[#5D4037] bg-white rounded-2xl px-4 py-3 border-3 border-[#E0E0E0] min-h-[80px]">
+                {displayProfReview || '(No comments)'}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-[#5D4037]/80 mb-3">(Optional)</p>
+                <textarea
+                  value={profReview}
+                  onChange={e => setProfReview(e.target.value)}
+                  placeholder="Share your thoughts about the professor..."
+                  className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-2xl focus:outline-none focus:border-[#78C850] transition-colors resize-none bg-white text-[#5D4037]"
+                  rows={3}
+                />
+              </>
+            )}
           </div>
 
           {/* Resources Section */}
@@ -174,84 +211,108 @@ export function CourseModal({ course, onClose, onSave, onDelete, isNew = false, 
                         href={resource.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-xs font-medium text-[#5D4037] transition-colors"
+                        className="px-3 py-1 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-xs font-medium transition-colors"
                       >
                         Open
                       </a>
-                      <button
-                        onClick={() => handleRemoveResource(resource.id)}
-                        className="p-1.5 hover:bg-red-100 rounded-full transition-colors text-red-600 opacity-0 group-hover:opacity-100"
-                        title="Remove"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => handleRemoveResource(resource.id)}
+                          className="p-1.5 hover:bg-red-100 rounded-full transition-colors text-red-600 opacity-0 group-hover:opacity-100"
+                          title="Remove"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Add Resource Input */}
-            <div className="space-y-2">
-              <input
-                type="url"
-                value={newResourceUrl}
-                onChange={e => setNewResourceUrl(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleAddResource()}
-                placeholder="https://youtube.com/watch?v=..."
-                className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
-              />
-              <input
-                type="text"
-                value={newResourceTitle}
-                onChange={e => setNewResourceTitle(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleAddResource()}
-                placeholder="Title/Note (e.g., Bilibili Playlist)"
-                className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
-              />
-              <button
-                onClick={handleAddResource}
-                className="w-full px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-[#5D4037] font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Plus size={16} />
-                Add
-              </button>
-            </div>
+            {/* Add Resource Input - Only show when not read-only */}
+            {!isReadOnly && (
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  value={newResourceUrl}
+                  onChange={e => setNewResourceUrl(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && handleAddResource()}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
+                />
+                <input
+                  type="text"
+                  value={newResourceTitle}
+                  onChange={e => setNewResourceTitle(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && handleAddResource()}
+                  placeholder="Title/Note (e.g., Bilibili Playlist)"
+                  className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-full focus:outline-none focus:border-[#78C850] transition-colors bg-white text-[#5D4037]"
+                />
+                <button
+                  onClick={handleAddResource}
+                  className="w-full px-4 py-2 bg-white border-3 border-[#78C850] text-[#78C850] hover:bg-[#78C850] hover:text-white button-3d rounded-full text-[#5D4037] font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus size={16} />
+                  Add
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="bg-[#F0F8F0] rounded-3xl p-4 sm:p-6 border-3 border-[#E0E0E0]">
             <h3 className="text-lg sm:text-xl font-bold text-[#5D4037] mb-4" style={{ fontFamily: "'Varela Round', sans-serif" }}>
               One-Liner
             </h3>
-            <p className="text-sm text-[#5D4037]/80 mb-3">
-              Quick tip or takeaway ({oneLiner.length}/140)
-            </p>
-            <textarea
-              value={oneLiner}
-              onChange={e =>
-                setOneLiner(e.target.value.slice(0, 140))
-              }
-              maxLength={140}
-              placeholder="Share your best tip or lesson learned..."
-              className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-2xl focus:outline-none focus:border-[#78C850] transition-colors resize-none bg-white text-[#5D4037]"
-              rows={3}
-            />
+            {isReadOnly ? (
+              <p className="text-sm text-[#5D4037] bg-white rounded-2xl px-4 py-3 border-3 border-[#E0E0E0] min-h-[80px]">
+                {displayOneLiner || '(No review)'}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-[#5D4037]/80 mb-3">
+                  Quick tip or takeaway ({oneLiner.length}/140)
+                </p>
+                <textarea
+                  value={oneLiner}
+                  onChange={e =>
+                    setOneLiner(e.target.value.slice(0, 140))
+                  }
+                  maxLength={140}
+                  placeholder="Share your best tip or lesson learned..."
+                  className="w-full px-4 py-3 border-3 border-[#E0E0E0] rounded-2xl focus:outline-none focus:border-[#78C850] transition-colors resize-none bg-white text-[#5D4037]"
+                  rows={3}
+                />
+              </>
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="flex-1 px-6 py-3 bg-white border-3 border-[#5D4037] text-[#5D4037] rounded-full font-semibold button-3d"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F3D03E] to-[#78C850] text-white rounded-full font-semibold button-3d"
-            >
-              Save & Review
-            </button>
-          </div>
+          {/* Action Buttons */}
+          {isReadOnly ? (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={onClose}
+                className="px-8 py-3 bg-white border-3 border-[#5D4037] text-[#5D4037] rounded-full font-semibold button-3d"
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <button
+                onClick={onClose}
+                className="flex-1 px-6 py-3 bg-white border-3 border-[#5D4037] text-[#5D4037] rounded-full font-semibold button-3d"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F3D03E] to-[#78C850] text-white rounded-full font-semibold button-3d"
+              >
+                Save & Review
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

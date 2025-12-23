@@ -338,6 +338,7 @@ export function TimelineHexagonGrid({ courses, onCoursesChange, onCoursesChangeI
           onDelete={handleDeleteCourse}
           isNew={selectedIsNew}
           isOwner={isOwner}
+          isReadOnly={!isOwner}
         />
       )}
     </div>
